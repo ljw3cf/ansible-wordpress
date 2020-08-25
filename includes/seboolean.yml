@@ -1,0 +1,5 @@
+- name: Active seboolean for specific function
+  seboolean: 
+    name: "{{ sebool_name }}"
+    state: yes 
+    persistent: yes

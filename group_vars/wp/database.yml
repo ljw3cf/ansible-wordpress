@@ -1,0 +1,10 @@
+database:
+  yum_repository:
+    baseurl: https://ftp.harukasan.org/mariadb/yum/10.5/centos7-amd64
+    gpgkey: https://ftp.harukasan.org/mariadb/yum/RPM-GPG-KEY-MariaDB
+  conf:
+    conf_path: /etc/my.cnf.d/server.cnf
+    db_port: 3306
+  user:
+    wp_user: admin
+  wp_database: wordpress_db

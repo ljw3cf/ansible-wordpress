@@ -1,0 +1,20 @@
+- name: Create a new primary partition for LVM
+  parted:
+    device: "{{ nfs['partition']['device'] }}"
+    number: "{{ nfs['partition']['part_number'] }}"
+    flags: [ lvm ]
+    state: present
+    part_start: "{{ nfs['partition']['size'] }}"
+- name: Create a ext4 fs on /dev/vdb1 
+  filesystem:
+    fstype: "{{ nfs['partition']['fstype'] }}"
+    dev: "{{ nfs['partition']['device'] }}{{ nfs['partition']['part_number'] }}"
+- name: mount /dev/vdb1 on /wordpressdir
+  mount:
+    path: "{{ nfs['nfs_mountpoint'] }}"
+    src: "{{ nfs['partition']['device'] }}{{ nfs['partition']['part_number'] }}"
+    fstype: ext4
+    state: mounted
+- template:
+    src: templates/exports.j2
+    dest: "{{ nfs['exports']['conf_path'] }}"

@@ -1,0 +1,44 @@
+---
+- name: Download wordpress
+  get_url: 
+    url: "https://ko.wordpress.org/wordpress-{{ nfs['wordpress']['wp-release'] }}-{{ nfs['wordpress']['wp-lang'] }}.tar.gz" 
+    dest: /tmp/wordpress-5.3.4-ko_KR.tar.gz
+  async: 300 
+  poll: 0
+  check_mode: no
+- name: install nfs-utils
+  include: includes/yum-install.yml service_name=nfs-utils
+  check_mode: no
+- name: Create a directory for nfs service
+  file:
+    path: "{{ nfs['nfs_mountpoint'] }}"
+    state: directory
+    mode: '0775'
+  check_mode: no
+- name: Attempt format partition and mount  
+  block:
+    - name: format partition and mount if device is defined
+      include: includes/partition.yml
+  when: nfs['partition']['device'] is defined
+- name: Unarchive wordpress arch
+  unarchive: 
+    src: "/tmp/wordpress-{{ nfs['wordpress']['wp-release'] }}-{{ nfs['wordpress']['wp-lang'] }}.tar.gz" 
+    dest: "{{ nfs['nfs_mountpoint'] }}" 
+    remote_src: yes 
+    owner: root 
+    group: root
+- name: template wp-config.php
+  template:
+    src: templates/wp-config.php.j2
+    dest: "{{ nfs['nfs_mountpoint'] }}/wordpress/wp-config.php"
+  notify: restart nfs-server
+- name: start nfs service
+  include: includes/service.yml service_name=nfs-server
+- name: allow port for nfs, rpc-bind and mountd
+  include: includes/firewalld.yml service_name={{ item }}
+  with_items:
+    - nfs
+    - rpc-bind
+    - mountd
+  
+# tasks file for nfs

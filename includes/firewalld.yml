@@ -1,0 +1,6 @@
+- name: allow port for specific service
+  firewalld:
+    service: '{{ service_name }}'
+    permanent: yes
+    state: enabled
+    immediate: yes

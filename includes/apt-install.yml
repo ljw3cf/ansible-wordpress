@@ -1,0 +1,4 @@
+- name: install specific service
+  apt:
+    name: '{{ service_name }}'
+    state: latest

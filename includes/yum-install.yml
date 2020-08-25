@@ -1,0 +1,4 @@
+- name: install specific service
+  yum:
+    name: '{{ service_name }}'
+    state: latest

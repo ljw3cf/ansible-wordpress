@@ -1,0 +1,25 @@
+- hosts: wp
+  become: yes
+  roles: 
+    - allnode
+
+- hosts: wp-haproxy
+  become: yes
+  roles: 
+    - haproxy
+
+- hosts: wp-nfs
+  become: yes
+  roles: 
+    - nfs
+
+- hosts: wp-database
+  become: yes
+  roles: 
+    - database
+
+- hosts: wp-webserver
+  become: yes
+  roles: 
+    - webserver
+

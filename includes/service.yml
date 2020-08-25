@@ -1,0 +1,5 @@
+- name: start specific service
+  service:
+    name: "{{ service_name }}"
+    enabled: true
+    state: started

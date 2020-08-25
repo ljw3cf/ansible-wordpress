@@ -1,0 +1,9 @@
+---
+- name: install epel-release & libsemanage-python
+  include: includes/yum-install.yml service_name={{ item }}
+  with_items:
+  - epel-release
+  - libsemanage-python
+  check_mode: no
+  when: ansible_os_family == 'RedHat'
+    # tasks file for allnode

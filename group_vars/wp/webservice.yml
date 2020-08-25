@@ -1,0 +1,10 @@
+webservice:
+  nfs:
+    mount_path: /var/www/html
+    nfs_source: 192.168.123.54:/wordpressdir
+    fstype: nfs
+  remi_ver: 7
+  conf:
+    conf_path: /etc/httpd/conf/httpd.conf
+    port: 80
+  

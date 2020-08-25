@@ -1,0 +1,80 @@
+--- 
+- name: Add yum_repository for mariadb
+  yum_repository: 
+    name: MariaDB 
+    baseurl: "{{ database['yum_repository']['baseurl'] }}"
+    gpgkey: "{{ database['yum_repository']['gpgkey'] }}"
+    gpgcheck: 1 
+    description: MariaDB
+  check_mode: no
+
+- name: Install MariaDB_server and client
+  yum:
+    name: MariaDB-server,MariaDB-client
+    enablerepo: MariaDB
+    state: latest    
+  check_mode: no
+
+- name: Install MySQL-python
+  include: includes/yum-install.yml service_name="MySQL-python"
+  check_mode: no   
+
+- name: Limit accessible hosts and Set port for db at init node
+  template:
+    src: server.cnf.j2
+    dest: "{{ database['conf']['conf_path'] }}"
+  notify: restart mariadb
+
+- name: Start mariadb
+  include: includes/service.yml service_name=mariadb
+
+- name: Set root password
+  mysql_user: 
+    login_user: root
+    login_password: '' 
+    user: root 
+    password: "{{ dbroot_passwd }}"
+    state: present
+  ignore_errors: yes
+- name: Delete anonymous user in DB
+  mysql_user: 
+    login_user: root
+    login_password: "{{ dbroot_passwd }}"
+    name: '' 
+    host_all: yes 
+    state: absent
+- name: Delete test db in DB
+  mysql_db: 
+    login_user: root
+    login_password: "{{ dbroot_passwd }}"
+    name: test 
+    state: absent
+- name: Create DB for wordpress
+  mysql_db: 
+    login_user: root
+    login_password: "{{ dbroot_passwd }}"
+    name: "{{ database['wp_database'] }}"
+    state: present
+- name: Create User for wordpress
+  mysql_user: 
+    login_user: root
+    login_password: "{{ dbroot_passwd }}"
+    name:  "{{ database['user']['wp_user'] }}"
+    password: "{{ wp_passwd }}"
+    priv: "{{ database['wp_database'] }}.*:ALL,GRANT"
+    host: '192.168.123.%' 
+    state: present
+
+- name: Open port for database 
+  firewalld: 
+    port: "{{ database['conf']['db_port'] }}/tcp" 
+    permanent: yes 
+    state: enabled 
+    immediate: yes
+    
+- name: Active seboolean for mysql
+  include: includes/seboolean.yml sebool_name=mysql_connect_any
+
+
+
+# tasks file for database

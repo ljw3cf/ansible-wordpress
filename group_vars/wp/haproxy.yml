@@ -1,0 +1,14 @@
+haproxy:
+    conf_path: /etc/haproxy/haproxy.cfg
+    frontend:
+      port: 80
+    backend:
+      name: wp
+      balance_type: roundrobin
+      web1:
+        ip: 192.168.123.52
+        port: 80
+      web2:
+        ip: 192.168.123.53
+        port: 80
+      

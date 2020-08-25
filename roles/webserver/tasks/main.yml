@@ -1,0 +1,46 @@
+---
+- name: Install nfs-utils for mount
+  include: includes/yum-install.yml service_name=nfs-utils
+  check_mode: no
+  
+- name: mount /wordpressdir on /var/www/html
+  mount:
+    path: "{{ webservice['nfs']['mount_path'] }}"
+    src: "{{ webservice['nfs']['nfs_source'] }}"
+    fstype: "{{ webservice['nfs']['fstype'] }}"
+    state: mounted
+    
+- name: Install httpd, remi-release-"{{ webservice ['remi_ver'] }}"
+  include: includes/yum-install.yml service_name="{{ item }}"
+  with_items: 
+    - httpd
+    - https://rpms.remirepo.net/enterprise/remi-release-{{ webservice ['remi_ver'] }}.rpm 
+- name: reset bind-address and port
+  template:
+    src: httpd.conf.j2
+    dest: "{{ webservice['conf']['conf_path'] }}"
+  notify: restart httpd
+- name: Install php and php-mysql 
+  yum: 
+    name: php,php-mysql 
+    enablerepo: remi-php74 
+    state: latest
+    
+- name: Open port for httpd
+  firewalld: 
+    port: "{{ webservice['conf']['port'] }}/tcp"
+    permanent: yes 
+    state: enabled 
+    immediate: yes
+- name: Active seboolean for httpd
+  include: includes/seboolean.yml sebool_name="{{ item }}"
+  with_items:
+    - httpd_can_network_connect_db
+    - httpd_use_nfs
+
+- name: Start httpd
+  service: 
+    name: httpd 
+    state: started 
+    enabled: true
+# tasks file for webserver
